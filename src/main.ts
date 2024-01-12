@@ -126,6 +126,7 @@ async function createPartitions(dataSource: DataSource) {
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.enableCors();
   const dataSource = app.get(DataSource);
   await createPartitions(dataSource);
   await dataSource.synchronize();
