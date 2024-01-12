@@ -24,15 +24,21 @@ import { ProductsCombinations } from './products/entities/product-combinations.e
   imports: [
   ConfigModule.forRoot(),
   TypeOrmModule.forRoot({
-    type:'postgres',
-    host: process.env.DB_HOST,
-    port: +process.env.DB_PORT,
-    database: process.env.DB_NAME,
-    username: process.env.DB_USERNAME,
-    password: process.env.DB_PASS,
-    autoLoadEntities: true,
-    synchronize: true,
-    entities: [Venta, VentaProducto, Product, ProductImage, Tag, Email, User, ProductsCombinations]
+  type: 'postgres',
+  host: process.env.DB_HOST,
+  port: +process.env.DB_PORT,
+  database: process.env.DB_NAME,
+  username: process.env.DB_USERNAME,
+  password: process.env.DB_PASS,
+  autoLoadEntities: true,
+  synchronize: true,
+  entities: [Venta, VentaProducto, Product, ProductImage, Tag, Email, User, ProductsCombinations],
+  ssl: true,
+  extra: {
+    ssl: {
+      rejectUnauthorized: false,
+    },
+  },
   }),
   ProductsModule,
   CommonModule,

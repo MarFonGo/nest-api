@@ -16,7 +16,6 @@ export class SeedController {
     description: 'Seed Executed',
   })
   @ApiResponse({status: 403, description: "Forbidden"})
-  @Auth(validRoles.admin)
   executeSeed(){
     return this.seedService.runSeed()
   }
