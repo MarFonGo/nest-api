@@ -1,7 +1,7 @@
 FROM node:alpine
-WORKDIR /nest-api
-ADD package.json /nest-api/package.json
+WORKDIR /nest
+ADD package.json /nest/package.json
 RUN npm install --no-update-notifier
-ADD . /nest-api
+ADD . /nest
 EXPOSE 3000
 CMD ["npm", "run", "start"]
