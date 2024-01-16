@@ -1,7 +1,7 @@
 version: '3'
 services:
   nest: 
-    image: nest-api:latest
+    image: nest-apimarfongo:latest
     restart: always
     ports:
       - "3001:3000"
