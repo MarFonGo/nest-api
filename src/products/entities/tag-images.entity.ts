@@ -1,6 +1,7 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { ApiProperty } from "@nestjs/swagger";
 import { Tag } from "./product-tags.entity";
+import { Product } from "./product.entity";
 
 
 @Entity()
@@ -26,4 +27,11 @@ export class TagImage{
         {onDelete: 'CASCADE'}
     )
     tag: Tag;
+
+    @ManyToOne(
+        () => Product,
+        ( product ) => product.images,
+        {onDelete: 'CASCADE'}
+    )
+    product: Product;
 }

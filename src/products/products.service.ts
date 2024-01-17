@@ -63,6 +63,7 @@ export class ProductsService {
       const tag= await this.findTag(productDetails.subtag);
       for (image of images){
         const tagImages = this.tagImageRepository.create({
+          product: product,
           tag: tag[0], 
           url: `${process.env.HOST_NAME}/files/products/${image}`
         });
@@ -292,8 +293,19 @@ export class ProductsService {
     try {
 
       if ( images ){
+        let img: string;
         await queryRunner.manager.delete( ProductImage, {product: { id } })
+        await queryRunner.manager.delete( TagImage, {product: { id } })
         product.images= images.map(image => this.productImageRepository.create({ url: `${process.env.HOST_NAME}/files/products/${image}` }))
+        const tag= await this.findTag(toUpdate.subtag);
+        for (img of images){
+          const tagImages = this.tagImageRepository.create({
+            product: product,
+            tag: tag[0],
+            url: `${process.env.HOST_NAME}/files/products/${img}`
+          });
+          await queryRunner.manager.save( tagImages ); 
+        } 
       } 
       if(user)
         product.user = user;

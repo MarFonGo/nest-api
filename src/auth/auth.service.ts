@@ -143,7 +143,6 @@ export class AuthService {
   }
   
   async login(loginUserDto: LoginUserDto) {
-
     const {password, email} = loginUserDto;
     const user = await this.userRepository.findOne({
       where: {email},
