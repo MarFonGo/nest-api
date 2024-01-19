@@ -137,7 +137,7 @@ export class AuthService {
           };
         }
         else{
-          throw new UnauthorizedException(`El usuario ya existe en la base de datos`);
+          throw new UnauthorizedException(`El usuario ya se encuentra registrado`);
         }
       }
 
@@ -155,9 +155,11 @@ export class AuthService {
       select: { email: true, id: true, password: true, fullName: true}
     });
     if (!user || !await bcrypt.compare(password, user.password))
+      
       throw new UnauthorizedException(`Credencials not valid`);
     
     delete user.password;
+    
     return {
       user,
       token: this.getJwtToken({id: user.id})
