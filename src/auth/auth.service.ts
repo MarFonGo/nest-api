@@ -144,7 +144,7 @@ export class AuthService {
     } catch (error) {
       await queryRunner.rollbackTransaction();
       await queryRunner.release();
-      this.handleDBError( error );
+      return error;
     };
   }
   
