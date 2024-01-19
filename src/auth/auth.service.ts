@@ -122,17 +122,23 @@ export class AuthService {
         };
       }
       else{
-        usuario.password = bcrypt.hashSync( password, 10 );
-        usuario.fullName = fullName;
-        await queryRunner.manager.save( usuario );
-        await queryRunner.commitTransaction();
-        queryRunner.release();
-        delete usuario.password;
-        const user = usuario;
-        return {
-          user,
-          token: this.getJwtToken({id: usuario.id})
-        };
+        const defaultPassword=usuario.email;
+        if (await bcrypt.compare(defaultPassword, usuario.password)){
+          usuario.password = bcrypt.hashSync( password, 10 );
+          usuario.fullName = fullName;
+          await queryRunner.manager.save( usuario );
+          await queryRunner.commitTransaction();
+          queryRunner.release();
+          delete usuario.password;
+          const user = usuario;
+          return {
+            user,
+            token: this.getJwtToken({id: usuario.id})
+          };
+        }
+        else{
+          throw new UnauthorizedException(`El usuario ya existe en la base de datos`);
+        }
       }
 
     } catch (error) {
@@ -177,7 +183,6 @@ export class AuthService {
     if ( error.code === '23505' )
       throw new BadRequestException( error.detail );
     
-    console.log(error)
-    throw new InternalServerErrorException('Please check server logs')
+    throw new InternalServerErrorException(error);
   }
 }
