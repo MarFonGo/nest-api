@@ -20,7 +20,7 @@ export class ProductsController {
 
   @ApiBearerAuth() 
   @Post()
-  @Auth(validRoles.admin, validRoles.superUser)
+  @Auth(validRoles.admin)
   @ApiResponse({status: 201, description: "Product created", type: Product})
   @ApiResponse({status: 400, description: "Bad Request"})
   @ApiResponse({status: 403, description: "Forbidden"})

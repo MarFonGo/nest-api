@@ -19,6 +19,7 @@ import { Tag } from './products/entities/product-tags.entity';
 import { Email } from './email/entities/email.entity';
 import { User } from './auth/entities/user.entity';
 import { ProductsCombinations } from './products/entities/product-combinations.entity';
+import { AnunciosModule } from './anuncios/anuncios.module';
 
 @Module({
   imports: [
@@ -47,7 +48,8 @@ import { ProductsCombinations } from './products/entities/product-combinations.e
   AuthModule,
   MessagesWsModule,
   EmailModule,
-  VentasModule
+  VentasModule,
+  AnunciosModule
 ],
   controllers: [AppController],
   providers: [AppService],

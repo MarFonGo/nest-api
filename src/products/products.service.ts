@@ -54,12 +54,11 @@ export class ProductsService {
         user,
         images: images.map( image =>
           this.productImageRepository.create({ url: `${process.env.HOST_NAME}/files/products/${image}` }) )
-      });
-      let image: string;
-      
+      });      
       await queryRunner.manager.save( product );
       await queryRunner.commitTransaction();
       await queryRunner.startTransaction();
+      let image: string;
       const tag= await this.findTag(productDetails.subtag);
       for (image of images){
         const tagImages = this.tagImageRepository.create({
