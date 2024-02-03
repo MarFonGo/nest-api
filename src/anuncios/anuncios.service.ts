@@ -1,10 +1,11 @@
-import { BadRequestException, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { CreateAnuncioDto } from './dto/create-anuncio.dto';
 import { UpdateAnuncioDto } from './dto/update-anuncio.dto';
 import { DataSource, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Anounce } from './entities/anuncio.entity';
 import { AnounceMedia } from './entities/anounce-media.entity';
+import { isUUID } from 'class-validator';
 
 @Injectable()
 export class AnunciosService {
@@ -45,24 +46,95 @@ export class AnunciosService {
       await queryRunner.release();
       this.handleDBExceptions(error);
     }
+  }
+
+  async findAll() {
+    const anounces = await this.anounceRepository.find({
+      relations: {
+        medias: true,
+      }
+    });
+
+    return anounces
+  }
+
+  async findOne(term: string) {
     
-    return 'This action adds a new anuncio';
+    let anounce: Anounce;
+    
+    if ( isUUID(term) ){
+      anounce = await this.anounceRepository.findOneBy({ id:term });
+    }else{
+      const queryBuilder = this.anounceRepository.createQueryBuilder('anounce');
+
+      anounce= await queryBuilder.where(' UPPER(title)=:title',{
+        title: term.trim().toUpperCase(),
+      })
+      .leftJoinAndSelect('anounce.medias', 'anounceMedias')
+      .getOne();
+    }
+
+    if( !anounce )
+      throw new NotFoundException(`Anounce ${ term } not found`);
+    
+    return anounce;
   }
 
-  findAll() {
-    return `This action returns all anuncios`;
+  async update(id: string, updateAnuncioDto: UpdateAnuncioDto) {
+    
+    const {images, videos, ...toUpdate}  = updateAnuncioDto;
+    const medias = []; 
+    let anuncio: Anounce;
+    const anounce = await this.anounceRepository.preload({id, ...toUpdate, medias});
+    if (!images || !videos){
+      anuncio = await this.anounceRepository.findOneBy({id});
+    } 
+    if ( !anounce ) throw new NotFoundException(`Anounce with id: ${id} not found`);
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      if ( images ){
+        await queryRunner.manager.delete( AnounceMedia, {anounce: { id } })
+        if (!videos){
+          const video = anuncio.medias[0].urlvideo
+          anounce.medias = images.map(image => this.anounceMediaRepository.create({ urlimage: `${process.env.HOST_NAME}/files/anounces/${image}`, urlvideo: video  }))
+        }
+        else{
+          anounce.medias = images.map(image => this.anounceMediaRepository.create({ urlimage: `${process.env.HOST_NAME}/files/anounces/${image}`, urlvideo: videos  }))
+        }
+        await queryRunner.manager.save( anounce );
+        await queryRunner.commitTransaction();
+        await queryRunner.release();
+      }
+      else{
+        if ( videos ){
+          await queryRunner.manager.delete( AnounceMedia, {anounce: { id } })
+          let i: number;
+          const cantMedias = anuncio.medias.length;
+          for (i=0; i<cantMedias; i++){
+            const image = anuncio.medias[i].urlimage
+            anounce.medias.push(this.anounceMediaRepository.create({ urlimage: image, urlvideo: videos  }))
+          }
+          await queryRunner.manager.save( anounce );
+          await queryRunner.commitTransaction();
+          await queryRunner.release();
+        }
+      }
+      
+      return anounce;
+      
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      await queryRunner.release();
+      this.handleDBExceptions(error); 
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} anuncio`;
-  }
-
-  update(id: number, updateAnuncioDto: UpdateAnuncioDto) {
-    return `This action updates a #${id} anuncio`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} anuncio`;
+  async remove(id: string) {
+    const anounce = await this.findOne( id );
+    await this.anounceRepository.remove( anounce );
+    return 'DELETE COMPLETE';
   }
 
   private handleDBExceptions(error:any) {

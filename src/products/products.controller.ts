@@ -94,7 +94,7 @@ export class ProductsController {
   @ApiResponse({status: 201, description: "Product Updated", type: Product})
   @ApiResponse({status: 400, description: "Bad Request"})
   @ApiResponse({status: 403, description: "Forbidden"})
-  @Auth(validRoles.admin, validRoles.superUser)
+  @Auth(validRoles.admin)
   update(
     @Param('id', ParseUUIDPipe) id: string, 
     @Body() updateProductDto: UpdateProductDto,
@@ -108,7 +108,7 @@ export class ProductsController {
   @ApiResponse({status: 201, description: "Product Deleted"})
   @ApiResponse({status: 400, description: "Bad Request"})
   @ApiResponse({status: 403, description: "Forbidden"})
-  @Auth(validRoles.admin, validRoles.superUser)
+  @Auth(validRoles.admin)
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.productsService.remove(id);
   }

@@ -15,7 +15,7 @@ export class AnunciosController {
   @ApiBearerAuth() 
   @Post()
   @Auth(validRoles.admin)
-  @ApiResponse({status: 201, description: "Product created", type: Anounce})
+  @ApiResponse({status: 201, description: "Anounce created", type: Anounce})
   @ApiResponse({status: 400, description: "Bad Request"})
   @ApiResponse({status: 403, description: "Forbidden"})
   create(@Body() createAnuncioDto: CreateAnuncioDto) {
@@ -23,22 +23,37 @@ export class AnunciosController {
   }
 
   @Get()
+  @ApiResponse({status: 201, description: "Show all anounces", type: Anounce})
+  @ApiResponse({status: 400, description: "Bad Request"})
   findAll() {
     return this.anunciosService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.anunciosService.findOne(+id);
+  @Get(':term')
+  @ApiResponse({status: 201, description: "Show anounce selected", type: Anounce})
+  @ApiResponse({status: 400, description: "Bad Request"})
+  @ApiResponse({status: 403, description: "Forbidden"})
+  async findOne(@Param('term') term: string) {
+    return this.anunciosService.findOne(term);
   }
 
+  @ApiBearerAuth() 
   @Patch(':id')
+  @ApiResponse({status: 201, description: "Anounce Updated", type: Anounce})
+  @ApiResponse({status: 400, description: "Bad Request"})
+  @ApiResponse({status: 403, description: "Forbidden"})
+  @Auth(validRoles.admin)
   update(@Param('id') id: string, @Body() updateAnuncioDto: UpdateAnuncioDto) {
-    return this.anunciosService.update(+id, updateAnuncioDto);
+    return this.anunciosService.update(id, updateAnuncioDto);
   }
-
+  
+  @ApiBearerAuth() 
   @Delete(':id')
+  @ApiResponse({status: 201, description: "Anounce Deleted"})
+  @ApiResponse({status: 400, description: "Bad Request"})
+  @ApiResponse({status: 403, description: "Forbidden"})
+  @Auth(validRoles.admin)
   remove(@Param('id') id: string) {
-    return this.anunciosService.remove(+id);
+    return this.anunciosService.remove(id);
   }
 }
