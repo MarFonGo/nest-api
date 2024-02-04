@@ -295,12 +295,12 @@ export class ProductsService {
     if (query) {
       for (i=0; i<query.length; i++){
         
-          if (query[i].name1 === prod.slug) {
-              query[i].name1 = product.slug;
-          }
-          if (query[i].name2 === prod.slug) {
-              query[i].name2 = product.slug;
-          }      
+        if (query[i].name1 === prod.slug) {
+          query[i].name1 = product.slug;
+        }
+        if (query[i].name2 === prod.slug) {
+          query[i].name2 = product.slug;
+        }      
       }
       await this.combinationRepository.save(query);
     }
