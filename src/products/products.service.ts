@@ -291,18 +291,18 @@ export class ProductsService {
     .where("combination.name1 = :name", { name: prod.slug })
     .orWhere("combination.name2 = :name", { name: prod.slug })
     .getMany();
-    let producto: ProductsCombinations;
-    for (producto of query){
-      if (query) {
-        if (producto.name1 === prod.slug) {
-            producto.name1 = product.slug;
-        }
-        if (producto.name2 === prod.slug) {
-            producto.name2 = product.slug;
-        }
-    
-        await this.combinationRepository.save(query);
+    let i: number;
+    if (query) {
+      for (i=0; i<query.length; i++){
+        
+          if (query[i].name1 === prod.slug) {
+              query[i].name1 = product.slug;
+          }
+          if (query[i].name2 === prod.slug) {
+              query[i].name2 = product.slug;
+          }      
       }
+      await this.combinationRepository.save(query);
     }
     
     const queryRunner = this.dataSource.createQueryRunner();
