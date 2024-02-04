@@ -282,13 +282,32 @@ export class ProductsService {
   async update(id: string, updateProductDto: UpdateProductDto, user: User) {
 
     const { images, ...toUpdate } = updateProductDto;
+    const prod = await this.productRepository.findOneBy({id});
     const product = await this.productRepository.preload({id,...toUpdate});
     if ( !product ) throw new NotFoundException(`Product with id: ${id} not found`);
+    
+    const query = await this.combinationRepository
+    .createQueryBuilder("combination")
+    .where("combination.name1 = :name", { name: prod.slug })
+    .orWhere("combination.name2 = :name", { name: prod.slug })
+    .getMany();
+    let producto: ProductsCombinations;
+    for (producto of query){
+      if (query) {
+        if (producto.name1 === prod.slug) {
+            producto.name1 = product.slug;
+        }
+        if (producto.name2 === prod.slug) {
+            producto.name2 = product.slug;
+        }
+    
+        await this.combinationRepository.save(query);
+      }
+    }
     
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
-    
     try {
 
       if ( images ){
