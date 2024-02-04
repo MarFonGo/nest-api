@@ -33,6 +33,16 @@ export class Anounce {
     info: string;
 
     @ApiProperty({
+        example: "secreto_de_medianoche",
+        description: "Anounce's product",
+        uniqueItems: true
+    })
+    @Column('text',{
+        unique: true
+    })
+    productSlug: string;
+
+    @ApiProperty({
         example: "{aroma_de_medianoche.png, http://aroma_de_medianoche.mp4}",
         description: 'Anounce Medias',
       })

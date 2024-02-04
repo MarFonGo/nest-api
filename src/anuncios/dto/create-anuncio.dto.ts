@@ -3,8 +3,8 @@ import { IsString, MinLength,IsArray } from "class-validator";
 
 export class CreateAnuncioDto {
     @ApiProperty({
-        example: "Calzado Nike",
-        description: 'Product Title',
+        example: "Seducción enigmática: Nuevo perfume Misterio de Medianoche",
+        description: 'Anounce Title',
         uniqueItems: true
     })
     @IsString()
@@ -12,13 +12,22 @@ export class CreateAnuncioDto {
     title: string;
 
     @ApiProperty({
-        example: "Zapatos marca Nike a la moda",
-        description: 'Product Info',
+        example: "¡Despierta tus sentidos con nuestra nueva fragancia!",
+        description: 'Anounce Info',
         nullable: true
     })
     @IsString()
     @MinLength(1)
     info: string;
+
+    @ApiProperty({
+        example: "secreto_de_medianoche",
+        description: 'Product slug',
+        nullable: true
+    })
+    @IsString()
+    @MinLength(1)
+    productSlug: string;
 
     @ApiProperty({
         example: "[secreto_de_medianoche.png]",
