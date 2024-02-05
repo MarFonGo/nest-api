@@ -20,6 +20,7 @@ import { Email } from './email/entities/email.entity';
 import { User } from './auth/entities/user.entity';
 import { ProductsCombinations } from './products/entities/product-combinations.entity';
 import { AnunciosModule } from './anuncios/anuncios.module';
+import { NotificacionesModule } from './notificaciones/notificaciones.module';
 
 @Module({
   imports: [
@@ -49,7 +50,8 @@ import { AnunciosModule } from './anuncios/anuncios.module';
   MessagesWsModule,
   EmailModule,
   VentasModule,
-  AnunciosModule
+  AnunciosModule,
+  NotificacionesModule
 ],
   controllers: [AppController],
   providers: [AppService],
