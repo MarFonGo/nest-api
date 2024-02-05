@@ -12,6 +12,8 @@ import { Tag } from './entities/product-tags.entity';
 import { ProductsCombinations } from './entities/product-combinations.entity';
 import { Venta } from 'src/ventas/entities/venta.entity';
 import { TagImage } from './entities/tag-images.entity';
+import { Anounce } from 'src/anuncios/entities/anuncio.entity';
+import { AnounceMedia } from 'src/anuncios/entities/anounce-media.entity';
 
 @Injectable()
 export class ProductsService {
@@ -34,8 +36,14 @@ export class ProductsService {
     @InjectRepository( ProductsCombinations )
     private readonly combinationRepository: Repository<ProductsCombinations>,
 
-    @InjectRepository(Venta )
+    @InjectRepository(Venta)
     private readonly ventaRepository: Repository<Venta>,
+
+    @InjectRepository(Anounce)
+    private readonly anounceRepository: Repository<Anounce>,
+
+    @InjectRepository(AnounceMedia)
+    private readonly anounceMediaRepository: Repository<AnounceMedia>,
 
     private readonly dataSource: DataSource
   ){}
@@ -287,12 +295,14 @@ export class ProductsService {
     const slugAnt = prod.slug;
     const newSlug = product.slug;
     if ( !product ) throw new NotFoundException(`Product with id: ${id} not found`);
-    await this.combinationRepository
+    if(slugAnt !== newSlug){
+      await this.combinationRepository
       .createQueryBuilder()
       .update(ProductsCombinations)
       .set({ name1: () => `CASE WHEN name1 = :slugAnt THEN :newSlug ELSE name1 END`, name2: () => `CASE WHEN name2 = :slugAnt THEN :newSlug ELSE name2 END` })
       .where("name1 = :slugAnt OR name2 = :slugAnt", { slugAnt, newSlug })
       .execute();
+    }
     
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -350,6 +360,8 @@ export class ProductsService {
     const query3 = this.combinationRepository.createQueryBuilder('combination');
     const query4 = this.ventaRepository.createQueryBuilder('venta');
     const query5 = this.tagImageRepository.createQueryBuilder('tag');
+    const query6 = this.anounceRepository.createQueryBuilder('anounce');
+    const query7 = this.anounceMediaRepository.createQueryBuilder('anounceMedia');
 
     try {
       await query.delete().where({}).execute();
@@ -357,6 +369,9 @@ export class ProductsService {
       await query3.delete().where({}).execute();
       await query4.delete().where({}).execute();
       await query5.delete().where({}).execute();
+      await query6.delete().where({}).execute();
+      await query7.delete().where({}).execute();
+
       return true;
     } catch (error) {
       this.handleDBExceptions(error);
