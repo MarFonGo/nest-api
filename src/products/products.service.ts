@@ -284,26 +284,15 @@ export class ProductsService {
     const { images, ...toUpdate } = updateProductDto;
     const prod = await this.productRepository.findOneBy({id});
     const product = await this.productRepository.preload({id,...toUpdate});
+    const slugAnt = prod.slug;
+    const newSlug = product.slug;
     if ( !product ) throw new NotFoundException(`Product with id: ${id} not found`);
-    
-    const query = await this.combinationRepository
-    .createQueryBuilder("combination")
-    .where("combination.name1 = :name", { name: prod.slug })
-    .orWhere("combination.name2 = :name", { name: prod.slug })
-    .getMany();
-    let i: number;
-    if (query) {
-      for (i=0; i<query.length; i++){
-        
-        if (query[i].name1 === prod.slug) {
-          query[i].name1 = product.slug;
-        }
-        if (query[i].name2 === prod.slug) {
-          query[i].name2 = product.slug;
-        }      
-      }
-      await this.combinationRepository.save(query);
-    }
+    await this.combinationRepository
+      .createQueryBuilder()
+      .update(ProductsCombinations)
+      .set({ name1: () => `CASE WHEN name1 = :slugAnt THEN :newSlug ELSE name1 END`, name2: () => `CASE WHEN name2 = :slugAnt THEN :newSlug ELSE name2 END` })
+      .where("name1 = :slugAnt OR name2 = :slugAnt", { slugAnt, newSlug })
+      .execute();
     
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -346,6 +335,12 @@ export class ProductsService {
   async remove(id: string) {
     const product = await this.findOne( id );
     await this.productRepository.remove( product );
+    await this.combinationRepository
+      .createQueryBuilder()
+      .delete()
+      .from(ProductsCombinations)
+      .where("name1 = :valor OR name2 = :valor", { valor: product.slug })
+      .execute();
     return 'DELETE COMPLETE';
   }
 
