@@ -1,9 +1,8 @@
-import { CreateDateColumn, Entity, Index, JoinColumn, JoinTable, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, Index, JoinColumn, JoinTable, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { User } from "src/auth/entities/user.entity";
 import { ApiProperty } from "@nestjs/swagger";
 import { Email } from "src/email/entities/email.entity";
 import { VentaProducto } from "./venta-productos.entity";
-import { Product } from "src/products/entities/product.entity";
 
 @Entity()
 export class Venta {
@@ -15,7 +14,14 @@ export class Venta {
   })
   @PrimaryGeneratedColumn('uuid')
   id: string;
-
+  @ApiProperty({
+    example: "41 #5406 % 54 y 56",
+    description: 'User Adress',
+    uniqueItems: false
+  })
+  @Column('text', {default: 'recogida en la tienda'})
+  address?: string;
+  
   @OneToMany(
     () => VentaProducto, 
     ventaProducto => ventaProducto.venta,

@@ -11,7 +11,17 @@ export class CreateVentaDto {
     @IsString()
     @MinLength(1)
     @IsOptional()
-    emailInfo?: string;  
+    emailInfo?: string;
+    
+    @ApiProperty({
+        example: "41 #5406 % 54 y 56",
+        description: 'User Adress',
+        uniqueItems: false
+    })
+    @IsString()
+    @MinLength(1)
+    @IsOptional()
+    address?: string;
 
     @ApiProperty({
         example: "10",
