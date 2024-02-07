@@ -76,4 +76,13 @@ export class CreateProductDto {
     @IsArray()
     @IsOptional()
     images?: string[]; 
+
+    @ApiProperty({
+        example: "Nuevo producto!: Secreto de medianoche. Exquisito perfume con fragancia seductora, lo invitamos a descubrirlo.",
+        description: 'Add product notification',
+        nullable: true,
+    })
+    @IsString()
+    @IsOptional()
+    notification?: string;
 }

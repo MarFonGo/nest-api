@@ -21,6 +21,11 @@ import { User } from './auth/entities/user.entity';
 import { ProductsCombinations } from './products/entities/product-combinations.entity';
 import { AnunciosModule } from './anuncios/anuncios.module';
 import { NotificacionesModule } from './notificaciones/notificaciones.module';
+import { Anounce } from './anuncios/entities/anuncio.entity';
+import { AnounceMedia } from './anuncios/entities/anounce-media.entity';
+import { Notifications } from './notificaciones/entities/notificacione.entity';
+import { TagImage } from './products/entities/tag-images.entity';
+
 
 @Module({
   imports: [
@@ -34,7 +39,7 @@ import { NotificacionesModule } from './notificaciones/notificaciones.module';
   password: process.env.DB_PASS,
   autoLoadEntities: true,
   synchronize: true,
-  entities: [Venta, VentaProducto, Product, ProductImage, Tag, Email, User, ProductsCombinations],
+  entities: [Venta, VentaProducto, Product, ProductImage, Tag, TagImage,Email, User, ProductsCombinations, Anounce, AnounceMedia, Notifications],
   ssl: true,
   extra: {
     ssl: {

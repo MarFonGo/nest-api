@@ -12,12 +12,13 @@ import { Venta } from 'src/ventas/entities/venta.entity';
 import { TagImage } from './entities/tag-images.entity';
 import { Anounce } from 'src/anuncios/entities/anuncio.entity';
 import { AnounceMedia } from 'src/anuncios/entities/anounce-media.entity';
+import { Notifications } from 'src/notificaciones/entities/notificacione.entity';
 
 @Module({
   controllers: [ProductsController],
   providers: [ProductsService],
   imports:[
-    TypeOrmModule.forFeature([ Product, ProductImage, Tag, ProductsCombinations, Venta, TagImage, Anounce, AnounceMedia]),
+    TypeOrmModule.forFeature([ Product, ProductImage, Tag, ProductsCombinations, Venta, TagImage, Anounce, AnounceMedia, Notifications]),
     AuthModule,
   ],
   exports:[

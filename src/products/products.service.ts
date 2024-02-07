@@ -14,6 +14,7 @@ import { Venta } from 'src/ventas/entities/venta.entity';
 import { TagImage } from './entities/tag-images.entity';
 import { Anounce } from 'src/anuncios/entities/anuncio.entity';
 import { AnounceMedia } from 'src/anuncios/entities/anounce-media.entity';
+import { Notifications } from 'src/notificaciones/entities/notificacione.entity';
 
 @Injectable()
 export class ProductsService {
@@ -45,15 +46,19 @@ export class ProductsService {
     @InjectRepository(AnounceMedia)
     private readonly anounceMediaRepository: Repository<AnounceMedia>,
 
+    @InjectRepository(Notifications)
+    private readonly notificationRepository: Repository<Notifications>,
+
     private readonly dataSource: DataSource
   ){}
 
   async create(createProductDto: CreateProductDto, user: User) {
     
-    const{ images=[], ...productDetails } = createProductDto;
+    const{ images=[], notification,...productDetails } = createProductDto;
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
+    let notify: Notifications;
 
     try {
       
@@ -62,7 +67,15 @@ export class ProductsService {
         user,
         images: images.map( image =>
           this.productImageRepository.create({ url: `${process.env.HOST_NAME}/files/products/${image}` }) )
-      });      
+      }); 
+      if(notification){
+        notify = this.notificationRepository.create({
+          info: notification,
+          productSlug:  product.slug,
+          image:  `${process.env.HOST_NAME}/files/products/${images[0]}`,
+        })
+        await queryRunner.manager.save( notify );
+      }     
       await queryRunner.manager.save( product );
       await queryRunner.commitTransaction();
       await queryRunner.startTransaction();
@@ -292,9 +305,9 @@ export class ProductsService {
     const { images, ...toUpdate } = updateProductDto;
     const prod = await this.productRepository.findOneBy({id});
     const product = await this.productRepository.preload({id,...toUpdate});
+    if ( !product ) throw new NotFoundException(`Product with id: ${id} not found`);
     const slugAnt = prod.slug;
     const newSlug = product.slug;
-    if ( !product ) throw new NotFoundException(`Product with id: ${id} not found`);
     if(slugAnt !== newSlug){
       await this.combinationRepository
       .createQueryBuilder()
@@ -302,6 +315,21 @@ export class ProductsService {
       .set({ name1: () => `CASE WHEN name1 = :slugAnt THEN :newSlug ELSE name1 END`, name2: () => `CASE WHEN name2 = :slugAnt THEN :newSlug ELSE name2 END` })
       .where("name1 = :slugAnt OR name2 = :slugAnt", { slugAnt, newSlug })
       .execute();
+
+      const anounce = await this.anounceRepository
+      .findOneBy({productSlug: slugAnt})
+      if(anounce){
+        anounce.productSlug = newSlug;
+        await this.anounceRepository.save(anounce);
+      }
+      
+      const notification = await this.notificationRepository
+      .findOneBy({productSlug: slugAnt})
+      if(notification){
+        notification.productSlug = newSlug;
+        await this.notificationRepository.save(notification);
+      }
+
     }
     
     const queryRunner = this.dataSource.createQueryRunner();
@@ -346,11 +374,26 @@ export class ProductsService {
     const product = await this.findOne( id );
     await this.productRepository.remove( product );
     await this.combinationRepository
-      .createQueryBuilder()
-      .delete()
-      .from(ProductsCombinations)
-      .where("name1 = :valor OR name2 = :valor", { valor: product.slug })
-      .execute();
+    .createQueryBuilder()
+    .delete()
+    .from(ProductsCombinations)
+    .where("name1 = :valor OR name2 = :valor", { valor: product.slug })
+    .execute();
+    
+    await this.anounceRepository
+    .createQueryBuilder()
+    .delete()
+    .from(Anounce)
+    .where("productSlug = :valor", { valor: product.slug })
+    .execute();
+    
+    await this.notificationRepository
+    .createQueryBuilder()
+    .delete()
+    .from(Notifications)
+    .where("productSlug = :valor", { valor: product.slug })
+    .execute();
+    
     return 'DELETE COMPLETE';
   }
 
@@ -362,6 +405,7 @@ export class ProductsService {
     const query5 = this.tagImageRepository.createQueryBuilder('tag');
     const query6 = this.anounceRepository.createQueryBuilder('anounce');
     const query7 = this.anounceMediaRepository.createQueryBuilder('anounceMedia');
+    const query8 = this.notificationRepository.createQueryBuilder('notification');
 
     try {
       await query.delete().where({}).execute();
@@ -371,6 +415,7 @@ export class ProductsService {
       await query5.delete().where({}).execute();
       await query6.delete().where({}).execute();
       await query7.delete().where({}).execute();
+      await query8.delete().where({}).execute();
 
       return true;
     } catch (error) {
