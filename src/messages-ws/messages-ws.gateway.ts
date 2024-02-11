@@ -19,17 +19,21 @@ export class MessagesWsGateway implements OnGatewayConnection, OnGatewayDisconne
 
     const token = client.handshake.headers.authentication as string;
     let payload: JwtPayload;
-    
     try {
-      payload = this.jwtService.verify( token );
-      await this.messagesWsService.registerClient( client, payload.id );
-
+      if(token !== ''){
+        payload = this.jwtService.verify( token );
+        await this.messagesWsService.registerClient( client, payload.id );
+      }
+      else{
+        await this.messagesWsService.registerClient( client );
+      }
     } catch (error) {
-      client.disconnect();
+      console.log(error)
+        client.disconnect();
       return;
     }
 
-    this.wss.emit('clients-updated', this.messagesWsService.getConnectedClients())
+    this.wss.emit('sending-notifications', await this.messagesWsService.getNotifications())
   
   }
   
